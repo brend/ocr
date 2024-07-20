@@ -40,7 +40,7 @@ def save_to_file(text_data, output_file):
     print(f"Data saved to {output_file}")
 
 # Function to generate an HTML file with the image and table
-    def generate_html(image_path, text_data, html_file):
+def generate_html(image_path, text_data, html_file):
     html_content = f'''
     <!DOCTYPE html>
     <html lang="en">
