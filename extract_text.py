@@ -1,15 +1,7 @@
 import cv2
 import pytesseract
 import pandas as pd
-import os
-import sys
-
-if len(sys.argv) < 2:
-    print("Usage: python extract_text.py <image_path>")
-    sys.exit(1)
-
-# Specify the path to the Tesseract executable (Homebrew path)
-pytesseract.pytesseract.tesseract_cmd = r'/opt/homebrew/bin/tesseract'
+import argparse
 
 # Function to preprocess the image
 def preprocess_image(image_path):
@@ -19,14 +11,14 @@ def preprocess_image(image_path):
     return binary
 
 # Function to detect and recognize text with coordinates
-def detect_text_with_coordinates(image_path):
+def detect_text_with_coordinates(image_path, confidence_threshold):
     image = preprocess_image(image_path)
     custom_config = r'--oem 3 --psm 6'  # Custom config for Tesseract
     data = pytesseract.image_to_data(image, config=custom_config, output_type=pytesseract.Output.DICT)
     
     texts = []
     for i in range(len(data['text'])):
-        if int(data['conf'][i]) > 60:  # Confidence threshold to filter out low quality text
+        if int(data['conf'][i]) > confidence_threshold:  # Confidence threshold to filter out low quality text
             x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
             text = data['text'][i]
             texts.append({'Text': text, 'Coordinates': (x, y, w, h)})
@@ -100,15 +92,23 @@ def generate_html(image_path, text_data, html_file):
         file.write(html_content)
     print(f"HTML file saved to {html_file}")
 
-
 # Main function
-def main(image_path, output_csv, output_html):
-    text_data = detect_text_with_coordinates(image_path)
+def main(tesseract_path, image_path, confidence_threshold, output_csv, output_html):
+    # Set the Tesseract executable path
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    text_data = detect_text_with_coordinates(image_path, confidence_threshold)
     save_to_file(text_data, output_csv)
     generate_html(image_path, text_data, output_html)
 
-# Example usage
-image_path = sys.argv[1]
-output_csv = 'output.csv'
-output_html = 'output.html'
-main(image_path, output_csv, output_html)
+# Command-line interface
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Extract text and coordinates from an image and generate a table and HTML page.')
+    parser.add_argument('image_path', type=str, help='Path to the image file')
+    parser.add_argument('--tesseract_path', type=str, default='/opt/homebrew/bin/tesseract', help='Path to the Tesseract binary')
+    parser.add_argument('--confidence_threshold', type=int, default=60, help='Confidence threshold for text recognition')
+    parser.add_argument('--output_csv', type=str, default='output.csv', help='Output CSV file name')
+    parser.add_argument('--output_html', type=str, default='output.html', help='Output HTML file name')
+    
+    args = parser.parse_args()
+    
+    main(args.tesseract_path, args.image_path, args.confidence_threshold, args.output_csv, args.output_html)
