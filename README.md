@@ -34,7 +34,7 @@ The script expects the path to an image file
 as its single command line argument.
 
 ``` sh
-python extract_text.py /path/to/my_image.png
+python extract_text.py assets/FarmlandinEU2.png
 ```
 
 The output will be written to `output.csv` (a table of the text 
