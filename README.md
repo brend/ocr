@@ -3,6 +3,8 @@ Attempts to find text on an image and make
 the image searchable by providing links to
 the text segments.
 
+[HTML page with text fragment highlightin](assets/demo.jpg)
+
 ## Setup
 Create a Python virtual environment and install dependencies.
 
